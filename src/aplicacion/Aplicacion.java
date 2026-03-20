@@ -14,13 +14,11 @@ import acercade.AcercaDe;
 import acercade.GPL;
 import clases.*;
 import java.awt.Point;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JLabel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import juego.JuegoSolitario;
 import utilidades.Cambiar;
 import utilidades.Mensajes;
 
@@ -30,28 +28,19 @@ import utilidades.Mensajes;
  */
 public class Aplicacion extends javax.swing.JFrame{
 
-    private Mazo mazo;
+    private final JuegoSolitario juego;
     private int lblx, lbly;
     private int x, y, xref, yref;
-    private int indice;
-    private int c = 1;
-    private List<Carta> lesp1 = new ArrayList<>();
-    private List<Carta> lesp2 = new ArrayList<>();
-    private List<Carta> lesp3 = new ArrayList<>();
-    private List<Carta> lesp4 = new ArrayList<>();
-    private List<Carta> lesp5 = new ArrayList<>();
-    private List<Carta> lesp6 = new ArrayList<>();
-    private List<Carta> lesp7 = new ArrayList<>();
-    private List<Carta> lesp8 = new ArrayList<>();
 
     /** Creates new form form */
     public Aplicacion() {
+        juego = new JuegoSolitario(false);
         initComponents();
         Imagen.CARTA_VUELTA = Imagen.CARTA_ROJA;
         setLocationRelativeTo(null);
         setResizable(false);
         setTitle("JSolitario");
-        inicializarMazo(false);
+        refrescarVista();
         Cambiar.iconoDeFormulario(this, "/imagenes/icono.png");
         initAcercaDe();
         
@@ -388,7 +377,7 @@ public class Aplicacion extends javax.swing.JFrame{
         x = evt.getX();
         y = evt.getY();
 
-        if (indice != mazo.getMazo().size()) {
+        if (juego.getCartaActual() != null) {
             carta1.setBounds(lblx - (xref - x), lbly - (yref - y), 120, 170);
         }
     }//GEN-LAST:event_carta1MouseDragged
@@ -396,83 +385,18 @@ public class Aplicacion extends javax.swing.JFrame{
     private void carta1MouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_carta1MouseReleased
         if(evt.getClickCount() != 2){
             if (queCuadranteEstoy(getMousePosition()) != Cuadrante.ESPACIO_INVALIDO) {
-                switch( queCuadranteEstoy(getMousePosition()) ){
-                    case (Cuadrante.ESPACIO1):{
-                        jugarCarta(OrdenDeJugada.DESCENDIENTE, lesp1, esp1);
-                        break;
-                    }
-                    case (Cuadrante.ESPACIO2):{
-                        jugarCarta(OrdenDeJugada.DESCENDIENTE, lesp2, esp2);
-                        break;
-                    }
-                    case (Cuadrante.ESPACIO3):{
-                        jugarCarta(OrdenDeJugada.DESCENDIENTE, lesp3, esp3);
-                        break;
-                    }
-                    case (Cuadrante.ESPACIO4):{
-                        jugarCarta(OrdenDeJugada.DESCENDIENTE, lesp4, esp4);
-                        break;
-                    }
-                    case (Cuadrante.ESPACIO5):{
-                        jugarCarta(OrdenDeJugada.ASCENDENTE, lesp5, esp5);
-                        break;
-                    }
-                    case (Cuadrante.ESPACIO6):{
-                        jugarCarta(OrdenDeJugada.ASCENDENTE, lesp6, esp6);
-                        break;
-                    }
-                    case (Cuadrante.ESPACIO7):{
-                        jugarCarta(OrdenDeJugada.ASCENDENTE, lesp7, esp7);
-                        break;
-                    }
-                    case (Cuadrante.ESPACIO8):{
-                        jugarCarta(OrdenDeJugada.ASCENDENTE, lesp8, esp8);
-                        break;
-                    }
-                }
+                juego.jugarCartaEnEspacio(queCuadranteEstoy(getMousePosition()));
             }
         }else{ //doble click
-            int n = getEspacioJugable(mazo.getCarta(indice));
+            int n = juego.getEspacioJugable(juego.getCartaActual());
             System.out.println("Doble click: espacio jugable: "+n);
             if(n != -1){
-                switch(n){
-                    case (Cuadrante.ESPACIO1):{
-                        jugarCarta(OrdenDeJugada.DESCENDIENTE, lesp1, esp1);
-                        break;
-                    }
-                    case (Cuadrante.ESPACIO2):{
-                        jugarCarta(OrdenDeJugada.DESCENDIENTE, lesp2, esp2);
-                        break;
-                    }
-                    case (Cuadrante.ESPACIO3):{
-                        jugarCarta(OrdenDeJugada.DESCENDIENTE, lesp3, esp3);
-                        break;
-                    }
-                    case (Cuadrante.ESPACIO4):{
-                        jugarCarta(OrdenDeJugada.DESCENDIENTE, lesp4, esp4);
-                        break;
-                    }
-                    case (Cuadrante.ESPACIO5):{
-                        jugarCarta(OrdenDeJugada.ASCENDENTE, lesp5, esp5);
-                        break;
-                    }
-                    case (Cuadrante.ESPACIO6):{
-                        jugarCarta(OrdenDeJugada.ASCENDENTE, lesp6, esp6);
-                        break;
-                    }
-                    case (Cuadrante.ESPACIO7):{
-                        jugarCarta(OrdenDeJugada.ASCENDENTE, lesp7, esp7);
-                        break;
-                    }
-                    case (Cuadrante.ESPACIO8):{
-                        jugarCarta(OrdenDeJugada.ASCENDENTE, lesp8, esp8);
-                        break;
-                    }
-                }
+                juego.jugarCartaEnEspacio(n);
             }
         }
         
-        if (mazo.getMazo().isEmpty()) {
+        refrescarVista();
+        if (juego.mazoVacio()) {
             if (Mensajes.mensajePreguntaSiNo(this, "¡Has Ganado! ¿Deseas Jugar Nuevamente?") == Mensajes.SI) {
                 juegoNuevo();
             }
@@ -487,8 +411,7 @@ public class Aplicacion extends javax.swing.JFrame{
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
-        indice += 2;
-        cartas(indice);
+        refrescarVista();
     }//GEN-LAST:event_jMenuItem2ActionPerformed
 
     private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
@@ -513,8 +436,8 @@ private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
     private void cartaVueltaMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_cartaVueltaMouseReleased
         reubicarCarta();
-        indice -= 2;
-        cartas(indice);
+        juego.voltearCarta();
+        refrescarVista();
     }//GEN-LAST:event_cartaVueltaMouseReleased
 
     private void jMenuItem5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem5ActionPerformed
@@ -601,37 +524,13 @@ private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JCheckBoxMenuItem verCartaAbajo;
     // End of variables declaration//GEN-END:variables
 
-    private void cartas(int indice) {
-        
-        if (indice == 0) {//si estoy en la primera posicion
-            Cambiar.fondoDeLabel(this, cartaVuelta, Imagen.VACIA);
-        } else {
-            Cambiar.fondoDeLabel(this, cartaVuelta, Imagen.CARTA_VUELTA);
-        }
-
-        if (indice < 0) {//tengo que saber que numero es, ya que me pase del limite de la lista
-            if (indice == -1) {//si es -1 es que actualmente estoy mostrando el indice 1 y tengo que mostrar el indice 0
-                this.indice = 0;
-                cartas(this.indice);
-            } else if (indice == -2) {//y si es -2 es que actualmente estoy mostrando el indice 0 y tengo dar vuelta las cartas
-                this.indice = (mazo.getMazo().size()) - 2;
-                cartas(this.indice);
-            }
-        } else {
-            if (indice + 1 < mazo.getMazo().size()) {
-                Cambiar.fondoDeLabel(this, carta2, Imagen.RAIZ + mazo.getCarta(indice + 1).getPinta() + "/" + mazo.getCarta(indice + 1).getNumero() + Imagen.EXTENSION);
-            } else {
-                Cambiar.fondoDeLabel(this, carta2, Imagen.VACIA);
-            }
-
-            if (indice == mazo.getMazo().size()) {
-                Cambiar.fondoDeLabel(this, carta1, Imagen.VACIA);
-            } else {
-                Cambiar.fondoDeLabel(this, carta1, Imagen.RAIZ + mazo.getCarta(indice).getPinta() + "/" + mazo.getCarta(indice).getNumero() + Imagen.EXTENSION);
-            }
-        }
-        cartasRestantes.setText(Integer.toString(mazo.getMazo().size()));
-        jLabel2.setText(Integer.toString((indice == -2?mazo.getMazo().size()-2:indice)));
+    private void refrescarVista() {
+        actualizarCartaActual();
+        actualizarCartaInferior();
+        actualizarCartaVuelta();
+        actualizarEspacios();
+        cartasRestantes.setText(Integer.toString(juego.getCartasRestantes()));
+        jLabel2.setText(Integer.toString(juego.getIndiceVisible()));
     }
 
     private int queCuadranteEstoy(Point p) {
@@ -661,162 +560,9 @@ private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         carta1.setBounds(260, 410, 120, 170);
     }
 
-    private void jugarCarta(int ordenDeJugada, List<Carta> lista, javax.swing.JLabel lbl) {
-//        if (queCuadranteEstoy(getMousePosition()).equalsIgnoreCase(nombreEspacio)) {
-            if (lista.isEmpty()) {
-                if (mazo.getCarta(indice).getNumero() == (ordenDeJugada == OrdenDeJugada.ASCENDENTE ? 1 : 13)) {
-                    agregarCartaALista(lista, mazo.getCarta(indice),ordenDeJugada, lbl);
-                    
-//                    lista.add(mazo.getCarta(indice));
-//                    mazo.getMazo().remove(indice);
-//                    cartas(indice);
-                } else {
-                    reubicarCarta();
-                }
-            } else {//si el cuadrante no esta vacio
-                Carta carta = (Carta) lista.get(lista.size() - 1);
-                int numero = carta.getNumero();
-                String pinta = carta.getPinta();
-
-                if (mazo.getCarta(indice).getNumero() == (ordenDeJugada == OrdenDeJugada.ASCENDENTE ? numero + 1 : numero - 1) 
-                        && mazo.getCarta(indice).getPinta().equalsIgnoreCase(pinta)) {
-                    
-                    agregarCartaALista(lista, mazo.getCarta(indice),ordenDeJugada, lbl);
-                    
-                }
-                reubicarCarta();
-            }
-//        }
-    
-    }
-    
-    private boolean agregarCartaALista(List<Carta> lista, Carta c, int ordenDeJugada, JLabel lbl){
-        //antes tengo que ver si no esta la pinta en otra lista
-        
-        if(ordenDeJugada == OrdenDeJugada.ASCENDENTE){//5,6,7,8
-            if(lista == lesp5){// si es asi, tengo que ver que la pinta no este ni en 6, 7 y 8
-                if(isPintaInLista(lesp6, c)){
-                    return false;
-                }
-                if(isPintaInLista(lesp7, c)){
-                    return false;
-                }
-                if(isPintaInLista(lesp8, c)){
-                    return false;
-                }
-            }else if(lista == lesp6){
-                if(isPintaInLista(lesp5, c)){
-                    return false;
-                }
-                if(isPintaInLista(lesp7, c)){
-                    return false;
-                }
-                if(isPintaInLista(lesp8, c)){
-                    return false;
-                }
-            }else if(lista == lesp7){
-                if(isPintaInLista(lesp5, c)){
-                    return false;
-                }
-                if(isPintaInLista(lesp6, c)){
-                    return false;
-                }
-                if(isPintaInLista(lesp8, c)){
-                    return false;
-                }
-            }else{
-                if(isPintaInLista(lesp5, c)){
-                    return false;
-                }
-                if(isPintaInLista(lesp6, c)){
-                    return false;
-                }
-                if(isPintaInLista(lesp7, c)){
-                    return false;
-                }
-            }
-        }else if(lista == lesp1){
-            
-                if(isPintaInLista(lesp2, c)){
-                    return false;
-                }
-                if(isPintaInLista(lesp3, c)){
-                    return false;
-                }
-                if(isPintaInLista(lesp4, c)){
-                    return false;
-                }
-            }else if(lista == lesp2){
-                if(isPintaInLista(lesp1, c)){
-                    return false;
-                }
-                if(isPintaInLista(lesp3, c)){
-                    return false;
-                }
-                if(isPintaInLista(lesp4, c)){
-                    return false;
-                }
-            }else if(lista == lesp3){
-                if(isPintaInLista(lesp1, c)){
-                    return false;
-                }
-                if(isPintaInLista(lesp2, c)){
-                    return false;
-                }
-                if(isPintaInLista(lesp4, c)){
-                    return false;
-                }
-            }else{
-                if(isPintaInLista(lesp1, c)){
-                    return false;
-                }
-                if(isPintaInLista(lesp2, c)){
-                    return false;
-                }
-                if(isPintaInLista(lesp3, c)){
-                    return false;
-                }
-            }
-        Cambiar.fondoDeLabel(this, lbl, Imagen.RAIZ + mazo.getCarta(indice).getPinta() + "/" + mazo.getCarta(indice).getNumero() + Imagen.EXTENSION);
-//        Cambiar.fondoDeLabel(this, lbl, "/imagenes/" + mazo.getCarta(indice).getPinta() + "/" + mazo.getCarta(indice).getNumero() + ".png");
-        lista.add(mazo.getCarta(indice));
-        mazo.getMazo().remove(indice);
-        cartas(indice);
-        return true;
-    }
-
-    private void borrarLista(List lis) {
-        for (int i = 0; i < lis.size(); i++) {
-            System.out.println(lis.remove(i));;
-        }
-    }
-
-    private void inicializarMazo(boolean mazoOrdenado) {
-        indice = 102;
-        mazo = new Mazo(mazoOrdenado);
-        cartas(indice);
-        cartasRestantes.setText(Integer.toString(mazo.getMazo().size()));
-    }
-
     private void juegoNuevo() {
-        borrarLista(lesp1);
-        borrarLista(lesp2);
-        borrarLista(lesp3);
-        borrarLista(lesp4);
-        borrarLista(lesp5);
-        borrarLista(lesp6);
-        borrarLista(lesp7);
-        borrarLista(lesp8);
-
-        Cambiar.fondoDeLabel(this, esp1, Imagen.FONDO_ESP1);
-        Cambiar.fondoDeLabel(this, esp2, Imagen.FONDO_ESP2);
-        Cambiar.fondoDeLabel(this, esp3, Imagen.FONDO_ESP3);
-        Cambiar.fondoDeLabel(this, esp4, Imagen.FONDO_ESP4);
-        Cambiar.fondoDeLabel(this, esp5, Imagen.FONDO_ESP5);
-        Cambiar.fondoDeLabel(this, esp6, Imagen.FONDO_ESP6);
-        Cambiar.fondoDeLabel(this, esp7, Imagen.FONDO_ESP7);
-        Cambiar.fondoDeLabel(this, esp8, Imagen.FONDO_ESP8);
-        inicializarMazo(false);
+        juego.reiniciar(false);
+        refrescarVista();
     }
 
     private void initAcercaDe() {
@@ -824,140 +570,55 @@ private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         ad.addComponent(this.menuItemAcercade);
     }
 
-    private boolean isPintaInLista(List<Carta> lista, Carta c) {
-        try{
-            Carta carta = lista.get(0);
-            if(carta != null){
-                if(carta.getPinta().equalsIgnoreCase(c.getPinta())){
-                    return true;
-                }else return false;
-            }
-            else return false;
-        }catch(IndexOutOfBoundsException ex){
-            return false;
-        }
-    }
-
-    private int getEspacioJugable(Carta carta) {
-        if(lesp1.isEmpty() && carta.getNumero() == 13){
-            return 1;
-        }
-        
-        if(lesp2.isEmpty() && carta.getNumero() == 13){
-            return 2;
-        }
-        
-        if(lesp3.isEmpty() && carta.getNumero() == 13){
-            return 3;
-        }
-        if(lesp4.isEmpty() && carta.getNumero() == 13){
-            return 4;
-        }
-        
-        if(lesp5.isEmpty() && carta.getNumero() == 1){
-            return 5;
-        }
-        
-        if(lesp6.isEmpty() && carta.getNumero() == 1){
-            return 6;
-        }
-        
-        if(lesp7.isEmpty() && carta.getNumero() == 1){
-            return 7;
-        }
-        
-        if(lesp8.isEmpty() && carta.getNumero() == 1){
-            return 8;
-        }
-        //aca ya hay cartas en las listas
-        Carta ultimaCarta;
-        int numero;
-        String pinta;
-        
-        if(!lesp1.isEmpty()){
-            ultimaCarta = lesp1.get(lesp1.size()-1);//obtengo la ultima carta
-            numero = ultimaCarta.getNumero();
-            pinta = ultimaCarta.getPinta();
-            if(pinta.equalsIgnoreCase(carta.getPinta()) && numero == carta.getNumero()+1){
-                return 1;
-            }
-        }
-        
-        if(!lesp2.isEmpty()){
-            ultimaCarta = lesp2.get(lesp2.size()-1);//obtengo la ultima carta
-            numero = ultimaCarta.getNumero();
-            pinta = ultimaCarta.getPinta();
-            if(pinta.equalsIgnoreCase(carta.getPinta()) && numero == carta.getNumero()+1){
-                return 2;
-            }
-        }
-        
-        
-        if(!lesp3.isEmpty()){
-            ultimaCarta = lesp3.get(lesp3.size()-1);//obtengo la ultima carta
-            numero = ultimaCarta.getNumero();
-            pinta = ultimaCarta.getPinta();
-            if(pinta.equalsIgnoreCase(carta.getPinta()) && numero == carta.getNumero()+1){
-                return 3;
-            }
-        }
-        
-        
-        if(!lesp4.isEmpty()){
-            ultimaCarta = lesp4.get(lesp4.size()-1);//obtengo la ultima carta
-            numero = ultimaCarta.getNumero();
-            pinta = ultimaCarta.getPinta();
-            if(pinta.equalsIgnoreCase(carta.getPinta()) && numero == carta.getNumero()+1){
-                return 4;
-            }
-        }
-        
-        
-        if(!lesp5.isEmpty()){
-            ultimaCarta = lesp5.get(lesp5.size()-1);//obtengo la ultima carta
-            numero = ultimaCarta.getNumero();
-            pinta = ultimaCarta.getPinta();
-            if(pinta.equalsIgnoreCase(carta.getPinta()) && numero == carta.getNumero()-1){
-                return 5;
-            }
-        }
-        
-        
-        if(!lesp6.isEmpty()){
-            ultimaCarta = lesp6.get(lesp6.size()-1);//obtengo la ultima carta
-            numero = ultimaCarta.getNumero();
-            pinta = ultimaCarta.getPinta();
-            if(pinta.equalsIgnoreCase(carta.getPinta()) && numero == carta.getNumero()-1){
-                return 6;
-            }
-        }
-        
-        
-        if(!lesp7.isEmpty()){
-             ultimaCarta = lesp7.get(lesp7.size()-1);//obtengo la ultima carta
-            numero = ultimaCarta.getNumero();
-            pinta = ultimaCarta.getPinta();
-            if(pinta.equalsIgnoreCase(carta.getPinta()) && numero == carta.getNumero()-1){
-                return 7;
-            }
-        }
-       
-        
-        if(!lesp8.isEmpty()){
-            ultimaCarta = lesp8.get(lesp8.size()-1);//obtengo la ultima carta
-            numero = ultimaCarta.getNumero();
-            pinta = ultimaCarta.getPinta();
-            if(pinta.equalsIgnoreCase(carta.getPinta()) && numero == carta.getNumero()-1){
-                return 8;
-            }
-        }
-        
-        
-        return -1;
-    }
-
     private void cabiarFondoCartaVuelta(String ruta) {
         Imagen.CARTA_VUELTA = ruta;
         Cambiar.fondoDeLabel(this, cartaVuelta, Imagen.CARTA_VUELTA);
+    }
+
+    private void actualizarCartaActual() {
+        actualizarCartaEnLabel(carta1, juego.getCartaActual());
+    }
+
+    private void actualizarCartaInferior() {
+        actualizarCartaEnLabel(carta2, juego.getCartaInferiorVisible());
+    }
+
+    private void actualizarCartaVuelta() {
+        if (juego.getIndiceVisible() == 0) {
+            Cambiar.fondoDeLabel(this, cartaVuelta, Imagen.VACIA);
+        } else {
+            Cambiar.fondoDeLabel(this, cartaVuelta, Imagen.CARTA_VUELTA);
+        }
+    }
+
+    private void actualizarEspacios() {
+        actualizarEspacio(esp1, Cuadrante.ESPACIO1, Imagen.FONDO_ESP1);
+        actualizarEspacio(esp2, Cuadrante.ESPACIO2, Imagen.FONDO_ESP2);
+        actualizarEspacio(esp3, Cuadrante.ESPACIO3, Imagen.FONDO_ESP3);
+        actualizarEspacio(esp4, Cuadrante.ESPACIO4, Imagen.FONDO_ESP4);
+        actualizarEspacio(esp5, Cuadrante.ESPACIO5, Imagen.FONDO_ESP5);
+        actualizarEspacio(esp6, Cuadrante.ESPACIO6, Imagen.FONDO_ESP6);
+        actualizarEspacio(esp7, Cuadrante.ESPACIO7, Imagen.FONDO_ESP7);
+        actualizarEspacio(esp8, Cuadrante.ESPACIO8, Imagen.FONDO_ESP8);
+    }
+
+    private void actualizarEspacio(javax.swing.JLabel label, int espacio, String rutaVacia) {
+        Carta carta = juego.getTopeEspacio(espacio);
+        if (carta == null) {
+            Cambiar.fondoDeLabel(this, label, rutaVacia);
+            return;
+        }
+        actualizarCartaEnLabel(label, carta);
+    }
+
+    private void actualizarCartaEnLabel(javax.swing.JLabel label, Carta carta) {
+        Cambiar.fondoDeLabel(this, label, getRutaCarta(carta));
+    }
+
+    private String getRutaCarta(Carta carta) {
+        if (carta == null) {
+            return Imagen.VACIA;
+        }
+        return Imagen.RAIZ + carta.getPinta() + "/" + carta.getNumero() + Imagen.EXTENSION;
     }
 }
