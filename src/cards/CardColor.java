@@ -3,13 +3,13 @@
  * and open the template in the editor.
  */
 
-package clases;
+package cards;
 
 /**
  *
  * @author pato
  */
-public class ColorCarta {
-    public static final int AZUL = 0;
-    public static final int ROJA = 1;
+public class CardColor {
+    public static final int BLUE = 0;
+    public static final int RED = 1;
 }

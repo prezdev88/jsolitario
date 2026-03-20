@@ -11,7 +11,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>17</maven.compiler.release>
-        <main.class>aplicacion.Aplicacion</main.class>
+        <main.class>app.Application</main.class>
     </properties>
 
     <build>
